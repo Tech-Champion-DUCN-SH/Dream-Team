@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project activeEnvironment="Default" name="test" resourceRoot="" soapui-version="4.6.4" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:testSuite name="TS1"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="true" maxResults="0" name="Web TestCase" searchProperties="true" id="9be01070-6770-4ccb-b909-571d857ad1ee"><con:settings/><con:testStep type="httprequest" name="get_short_url"><con:settings/><con:config method="GET" xsi:type="con:HttpRequest" name="get_short_url" downloadIncludedResources="false" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://127.0.0.1:8848/urlshortener/url</con:endpoint><con:request/><con:credentials><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><con:parameter><con:name>longUrl</con:name><con:value>${="http://www.ericsson.com/abcde" + (Math.random()*1000)}</con:value><con:style>QUERY</con:style><con:default>http://www.ericsson.com/company/company</con:default><con:path xsi:nil="true"/><con:description xsi:nil="true"/></con:parameter></con:parameters></con:config></con:testStep><con:testStep type="groovy" name="Groovy Script"><con:settings/><con:config><script>import groovy.json.JsonSlurper
+
+def xresponse = testRunner.testCase.testSteps["get_short_url"].testRequest.response.contentAsString
+def slurper = new JsonSlurper()
+def result = slurper.parseText(xresponse)
+def url = result.shortUrl.toString()
+
+testRunner.testCase.testSteps["query_short_url"].setPropertyValue("shortUrl",url)</script></con:config></con:testStep><con:testStep type="httprequest" name="query_short_url"><con:settings/><con:config method="GET" xsi:type="con:HttpRequest" name="query_short_url" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>http://127.0.0.1:8848/urlshortener/url</con:endpoint><con:request/><con:credentials><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><con:parameter><con:name>shortUrl</con:name><con:value>http://server-name/aaaw3D</con:value><con:style>QUERY</con:style></con:parameter></con:parameters></con:config></con:testStep><con:testStep type="groovy" name="Groovy Script 2"><con:settings/><con:config><script>import groovy.json.JsonSlurper
+
+def slurper = new JsonSlurper()
+
+def xresponse = testRunner.testCase.testSteps["query_short_url"].testRequest.response.contentAsString
+def result = slurper.parseText(xresponse)
+def url = result.longUrl.toString()
+
+def xresponse1 = testRunner.testCase.testSteps["get_short_url"].testRequest.response.contentAsString
+def result1 = slurper.parseText(xresponse1)
+def url1 = result1.longUrl.toString()
+
+def res = ( url == url1)
+
+log.info res
+
+assert res</script></con:config></con:testStep><con:loadTest name="LoadTest 1"><con:settings><con:setting id="HttpSettings@close-connections">false</con:setting></con:settings><con:threadCount>300</con:threadCount><con:startDelay>0</con:startDelay><con:sampleInterval>250</con:sampleInterval><con:calculateTPSOnTimePassed>true</con:calculateTPSOnTimePassed><con:resetStatisticsOnThreadCountChange>true</con:resetStatisticsOnThreadCountChange><con:historyLimit>-1</con:historyLimit><con:testLimit>100</con:testLimit><con:limitType>TIME</con:limitType><con:loadStrategy><con:type>Thread</con:type><con:config><startThreadCount>1</startThreadCount><endThreadCount>10</endThreadCount></con:config></con:loadStrategy><con:assertion type="Step Status" name="Step Status"/><con:maxAssertionErrors>100</con:maxAssertionErrors><con:cancelExcessiveThreads>true</con:cancelExcessiveThreads><con:strategyInterval>500</con:strategyInterval></con:loadTest><con:properties/></con:testCase><con:properties/></con:testSuite><con:properties/><con:wssContainer/></con:soapui-project>
