@@ -62,45 +62,6 @@ class SimpleProtocolHandler(val context: NioContext) extends ProtocolHandler {
         request = new HttpRequest(buffer)
         request.toInt()
     }
-	def shortToId(shortUrl:String) : Int = {
-    	var id = 0  
-    	val len = shortUrl.length() - 1
-    	var i = 0 
-    	while (i < len){
-    		val c = shortUrl.charAt(len - i)
-    		var v = 0
-    		if(c >= 'a' && c <= 'z')
-    			v = c - 'a'
-    		else if(c >= 'A' && c <= 'Z')
-    			v = c - 'A' + 26
-    		else  
-    			v = c - '0' + 52
-    	
-    		val t = scala.math.pow(62, i) * v  
-    		id = id + t.toInt
-    		i += 1
-    	}
-    	
-    	return id
-  	}
-	def idToShort(id:Int) : String = {
-		val chars = Array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r',
-      			 's','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K',
-      			 'L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3',
-      			 '4','5','6','7','8','9')
-      			 
-      	var vId = id
-      	var cnt = 5
-      	val values = Array('a','a','a','a','a','a')
-
-      	while (vId > 0) {  
-      		val remainder = vId % 62  
-      		values(cnt) = chars(remainder)
-      		vId = vId / 62
-      		cnt -= 1
-      	}  
-		return new String(values)
-  	}
 	
 	def handleInWorker(wc: Object): Object =  {
 	    val (longMap, shortArray, accu, base) = wc.asInstanceOf[(HashMap[String, Int], ArrayList[String], Int, Int)]
@@ -110,12 +71,12 @@ class SimpleProtocolHandler(val context: NioContext) extends ProtocolHandler {
 	        	    case false =>
 	        	        longMap.put(request.url, accu);
 	        	        shortArray.add(request.url)
-	        	        (new ShortenResponse(request.method, request.url, idToShort(accu * Config.nThread + base), request.shorturl_prefix()), accu + 1)
+	        	        (new ShortenResponse(request.method, request.url, ShortenUrlCodec.idToShort(accu * Config.nThread + base), request.shorturl_prefix()), accu + 1)
 	        	    case true =>
-	        	      	(new ShortenResponse(request.method, request.url, idToShort(longMap.get(request.url) * Config.nThread + base), request.shorturl_prefix()), accu)
+	        	      	(new ShortenResponse(request.method, request.url, ShortenUrlCodec.idToShort(longMap.get(request.url) * Config.nThread + base), request.shorturl_prefix()), accu)
 	        	}
 	        case 'Short =>
-	        	val id = (shortToId(request.url) - base) / 4
+	        	val id = (ShortenUrlCodec.shortToId(request.url) - base) / Config.nThread
 	        	id > -1 && id < accu match {
 	        	    case true =>
 	        	        (new ShortenResponse(request.method, shortArray.get(id), request.url, request.shorturl_prefix()), accu)

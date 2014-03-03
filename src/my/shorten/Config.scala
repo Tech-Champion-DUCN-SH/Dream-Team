@@ -66,6 +66,13 @@ object Config {
 	        10
 	}
 	
+	val dbgTrace = props.contains("debug") match {
+	    case true =>
+	         props("debug").toBoolean
+	    case false =>
+	        true
+	}
+	
 	override def toString = {
 	    "port = " + port  + 
 	    ", nThread = " + nThread + 
@@ -73,6 +80,16 @@ object Config {
 	    ", statFileName = " + statFileName + 
 	    ", capacity = " + capacity + 
 	    ", socketBacklog = " + socketBacklog
+	}
+	
+	def dbg(s: Object) {
+	     dbgTrace match {
+	         case true =>
+	            println(s)
+	         case false =>
+	             
+	     }
+	        
 	}
 	
 	println(this)

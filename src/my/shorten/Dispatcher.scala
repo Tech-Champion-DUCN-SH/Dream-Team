@@ -103,6 +103,7 @@ class RequestSelector(private val selector: Selector) {
 	                }catch{
 	            		case e: Exception => 
 	            		    e.printStackTrace()
+	            		    closeContext(ctx)
 	            	}
 	          });
 	            registerRequests.clear()
@@ -118,12 +119,22 @@ class RequestSelector(private val selector: Selector) {
 		                if (!ctx.channel.isOpen()) {
 		                    key.cancel();
 		                }else {
-		                    ctx.nioHandler.handleEvent(key)
+		                	try {
+		                	    ctx.nioHandler.handleEvent(key)
+		                	}catch {
+		                	    case ex:IOException =>
+		                	        close(ctx) 
+		                	}
+		                    
 		                }
 	                }
 	            }catch {
 	                case e: Exception =>
-	                    	e.printStackTrace();
+	                    	e.printStackTrace()
+	                    	val ctx:NioContext = key.attachment().asInstanceOf[NioContext]
+	                    	if (ctx != null) {
+	                    	    close(ctx)
+	                    	}
 	            }
 	        }
 	    }

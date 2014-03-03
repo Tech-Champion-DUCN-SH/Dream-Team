@@ -33,12 +33,15 @@ object ShortenUrlCodec {
     		i += 1
     	}
     	
-    	return id
+    	return magicId(id)
   	}
-	def idToShort(id:Int) : String = {
-		
-      			 
-      	var vId = id
+    
+    def magicId(id: Int) = {
+        ((id >> 16) << 16) | ((id & 0xF) << 8) | (id >> 8) & 0xF
+    }
+    
+	def idToShort(id:Int) : String = {			 
+      	var vId = magicId(id)
       	var cnt = 5
       	val values = Array('a','a','a','a','a','a')
 
@@ -94,23 +97,10 @@ class HttpRequest(buffer: Array[Byte]) {
       		val P = getContent.indexOf("?longUrl=") + "?longUrl=".length()
         	getContent.substring(P)
       	case 'Short =>
-      		val P = getContent.indexOf("?shortUrl=") + "?shortUrl=".length()
-      		val server_prefix = URLEncoder.encode(shorturl_prefix())
-      		val P1 = getContent.indexOf(server_prefix, P)
-      		if (P1 < 0) {
-      		    val P2 = getContent.indexOf(shorturl_prefix, P)
-      		    if (P2 > -1) {
-      		        getContent.substring(P2 + shorturl_prefix.length())
-      		    }else {
-      		        null
-      		    }
-      		}else {
-      		    getContent.substring(P1 + server_prefix.length())
-      		}
+      		getContent.substring(getContent.length() - 6);
       	case _ =>
       	    null
     	}
-  
   def toInt() : Int = {
       method match {
           case 'Short =>
